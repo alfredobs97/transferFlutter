@@ -5,6 +5,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:archive/archive_io.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 import 'package:path/path.dart';
 import 'package:async/async.dart';
@@ -36,17 +39,33 @@ class _MyHomePageState extends State<MyHomePage> {
   String url = "Esperando al archivo...";
   bool peticion = false;
   double opacidadCargado = 0.0;
-  
+  bool multiplesArchivos = false;
 
   Future<File> _elegir() async {
     return await FilePicker.getFile();
+  }
+
+  Future<Map<String, String>> _elegirVariosFicheros() async {
+    return await FilePicker.getMultiFilePath();
+  }
+
+  Future<File> _crearZip(Map<String, String> ficheros) async {
+    var encoder = ZipFileEncoder();
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path;
+
+    encoder.create(tempPath + '/miZip.zip');
+
+    ficheros.forEach((String nombre, String ruta) => encoder.addFile(File(ruta)));
+
+    encoder.close();
+    return File(tempPath + '/miZip.zip');
   }
 
   Future<String> _enviar(File archivo, String url) async {
     var stream = new http.ByteStream(DelegatingStream.typed(archivo.openRead()));
     var length = await archivo.length();
     var uri = Uri.parse(url + basename(archivo.path));
-
 
     var request = http.MultipartRequest("PUT", uri);
     var multipartFile = http.MultipartFile('file', stream, length, filename: basename(archivo.path));
@@ -74,23 +93,24 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Scaffold(
             key: _scaffoldKey,
             backgroundColor: Colors.transparent,
-
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0.0,
               centerTitle: true,
               title: Text(
-                'Transfiere tus archivos', style: TextStyle(color: Theme.of(context).accentColor,),
-              ),    
+                'Transfiere tus archivos',
+                style: TextStyle(
+                  color: Theme.of(context).accentColor,
+                ),
+              ),
             ),
-
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   MaterialButton(
-                    height: 200,
-                    minWidth: 200,
+                    height: MediaQuery.of(context).size.height * 0.30,
+                    minWidth: MediaQuery.of(context).size.width * 0.7,
                     child: Icon(Icons.attach_file),
                     padding: EdgeInsets.all(0.0),
                     color: Theme.of(context).primaryColor,
@@ -100,32 +120,68 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     onPressed: () {
-                      _elegir().then((File fichero) {
-                        peticion = true;
-                        setState(() {
-                          url = 'Subiendo el archivo';
-                        });
-                        _enviar(fichero, "https://transfer.sh/").then((String urlTemp) {
-                          setState(() {
-                            url = urlTemp;
-                            opacidadCargado = 1.0;
-                            print("terminado");
+                      if (multiplesArchivos) {
+                        _elegirVariosFicheros().then((Map<String, String> ficheros) {
+                          _crearZip(ficheros).then((File zip) {
+                            peticion = true;
+                            setState(() {
+                              url = 'Subiendo el archivo';
+                            });
+                            _enviar(zip, "https://transfer.sh/").then((String urlTemp) {
+                              setState(() {
+                                url = urlTemp;
+                                opacidadCargado = 1.0;
+                              });
+                            });
                           });
                         });
-                      });
+                      } else {
+                        _elegir().then((File fichero) {
+                          peticion = true;
+                          setState(() {
+                            url = 'Subiendo el archivo';
+                          });
+                          _enviar(fichero, "https://transfer.sh/").then((String urlTemp) {
+                            setState(() {
+                              url = urlTemp;
+                              opacidadCargado = 1.0;
+                            });
+                          });
+                        });
+                      }
                     },
                   ),
                   Card(
                     elevation: 8.0,
                     color: Theme.of(context).cardColor,
                     child: Padding(
-                      padding: EdgeInsets.all(10),
+                        padding: EdgeInsets.all(8),
+                        child: Column(
+                          children: [
+                            Text('Selecciona para subir multiples archivos en ZIP', style: TextStyle(color: Theme.of(context).accentColor),),
+                            Switch(
+                              value: multiplesArchivos,
+                              activeColor: Theme.of(context).accentColor,
+                              activeTrackColor: Theme.of(context).primaryColor,
+                              onChanged: (valor) {
+                                setState(() {
+                                  multiplesArchivos = valor;
+                                });
+                              },
+                            )
+                          ],
+                        )),
+                  ),
+                  Card(
+                    elevation: 8.0,
+                    color: Theme.of(context).cardColor,
+                    child: Padding(
+                      padding: EdgeInsets.all(15),
                       child: Text(
                         'Sube tu archivo para generar un link',
                         style: TextStyle(color: Theme.of(context).accentColor),
                       ),
                     ),
-                    
                   ),
                   AnimatedOpacity(
                     duration: Duration(seconds: 1, microseconds: 200),
@@ -140,12 +196,12 @@ class _MyHomePageState extends State<MyHomePage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Text(
-                                  '$url',
-                                  style: TextStyle(color: Theme.of(context).accentColor),
-                                ),
-                                Spacer(
-                                  flex: 2,
+                                Expanded(
+                                  child: AutoSizeText(
+                                    '$url',
+                                    style: TextStyle(color: Theme.of(context).accentColor),
+                                    maxLines: 1,
+                                  ),
                                 ),
                                 Container(
                                   width: 30,
@@ -153,7 +209,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                   child: VerticalDivider(
                                     color: Theme.of(context).accentColor,
                                   ),
-                                 
                                 ),
                                 IconButton(
                                   icon: Icon(Icons.content_copy),
@@ -165,7 +220,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 )
                               ],
                             ),
-                          ),    
+                          ),
                         )),
                   )
                 ],
