@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Transfer',
       theme: ThemeData(
-          backgroundColor: Colors.purple, accentColor: Colors.white, primaryColor: Colors.lightBlue, cardColor: Colors.amber),
+          backgroundColor: Colors.purple, accentColor: Colors.white, primaryColor: Colors.lightBlue, cardColor: Colors.amber,),
       home: MyHomePage(),
     );
   }
@@ -94,6 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
             key: _scaffoldKey,
             backgroundColor: Colors.transparent,
             appBar: AppBar(
+              brightness: Brightness.dark,
               backgroundColor: Colors.transparent,
               elevation: 0.0,
               centerTitle: true,
