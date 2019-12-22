@@ -21,7 +21,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Transfer',
       theme: ThemeData(
-          backgroundColor: Colors.purple, accentColor: Colors.white, primaryColor: Colors.lightBlue, cardColor: Colors.amber,),
+        backgroundColor: Colors.purple,
+        accentColor: Colors.white,
+        primaryColor: Colors.lightBlue,
+        cardColor: Colors.amber,
+      ),
       home: MyHomePage(),
     );
   }
@@ -159,7 +163,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: EdgeInsets.all(8),
                         child: Column(
                           children: [
-                            Text('Selecciona para subir multiples archivos en ZIP', style: TextStyle(color: Theme.of(context).accentColor),),
+                            Text(
+                              'Selecciona para subir multiples archivos en ZIP',
+                              style: TextStyle(color: Theme.of(context).accentColor),
+                            ),
                             Switch(
                               value: multiplesArchivos,
                               activeColor: Theme.of(context).accentColor,
