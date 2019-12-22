@@ -38,9 +38,8 @@ class Picker {
     var multipartFile = http.MultipartFile('file', stream, length, filename: basename(archivo.path));
     request.files.add(multipartFile);
 
-    return request.send().then((requested) {
-      requested.stream.bytesToString();
-    }).catchError((error){
+    return request.send().then((requested) => requested.stream.bytesToString()
+    ).catchError((error){
       throw error;
     });
   }
