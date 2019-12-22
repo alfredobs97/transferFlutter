@@ -82,16 +82,19 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       onPressed: () {
-                        setState(() {
-                          url = 'subiendo el archivo...';
-                          opacidadCargado = 1.0;
-                        });
                         picker.getUrl(multiplesArchivos).then((String urlTransfer) {
                           setState(() {
                             url = urlTransfer;
                           });
                         }).catchError((error) {
-                          print(error);
+                          mostrarMensajeSnack('Error subiendo el archivo');
+                          setState(() {
+                            opacidadCargado = 0.0;
+                          });
+                        });
+                        setState(() {
+                          url = 'subiendo el archivo...';
+                          opacidadCargado = 1.0;
                         });
                       }),
                   Card(
