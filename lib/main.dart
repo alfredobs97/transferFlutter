@@ -35,11 +35,11 @@ class _MyHomePageState extends State<MyHomePage> {
   final picker = Picker();
 
   String url;
-  double opacidadCargado = 0.0;
-  bool multiplesArchivos = false;
+  double opacityLoad = 0.0;
+  bool multipleFiles = false;
 
-  void mostrarMensajeSnack(String mensaje) {
-    _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(mensaje)));
+  void msgSnackBar(String msg) {
+    _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -82,19 +82,19 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       onPressed: () {
-                        picker.getUrl(multiplesArchivos).then((String urlTransfer) {
+                        picker.getUrl(multipleFiles).then((String urlTransfer) {
                           setState(() {
                             url = urlTransfer;
                           });
                         }).catchError((error) {
-                          mostrarMensajeSnack('Error subiendo el archivo');
+                          msgSnackBar('Error subiendo el archivo');
                           setState(() {
-                            opacidadCargado = 0.0;
+                            opacityLoad = 0.0;
                           });
                         });
                         setState(() {
                           url = 'subiendo el archivo...';
-                          opacidadCargado = 1.0;
+                          opacityLoad = 1.0;
                         });
                       }),
                   Card(
@@ -109,12 +109,12 @@ class _MyHomePageState extends State<MyHomePage> {
                               style: TextStyle(color: Theme.of(context).accentColor),
                             ),
                             Switch(
-                              value: multiplesArchivos,
+                              value: multipleFiles,
                               activeColor: Theme.of(context).accentColor,
                               activeTrackColor: Theme.of(context).primaryColor,
                               onChanged: (valor) {
                                 setState(() {
-                                  multiplesArchivos = valor;
+                                  multipleFiles = valor;
                                 });
                               },
                             )
@@ -134,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   AnimatedOpacity(
                     duration: Duration(seconds: 1, microseconds: 200),
-                    opacity: opacidadCargado,
+                    opacity: opacityLoad,
                     child: AnimatedContainer(
                         duration: Duration(seconds: 1),
                         padding: EdgeInsets.symmetric(vertical: 8.0),
@@ -164,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   color: Theme.of(context).accentColor,
                                   onPressed: () {
                                     Clipboard.setData(ClipboardData(text: url));
-                                    mostrarMensajeSnack('Link copiado al portapapeles');
+                                    msgSnackBar('Link copiado al portapapeles');
                                   },
                                 )
                               ],

@@ -8,15 +8,15 @@ import 'dart:io';
 
 class Picker {
 
-  Future<File> _elegir() async {
+  Future<File> pick() async {
     return await FilePicker.getFile();
   }
 
-  Future<Map<String, String>> _elegirVariosFicheros() async {
+  Future<Map<String, String>> pickMultipleFiles() async {
     return await FilePicker.getMultiFilePath();
   }
 
-  Future<File> _crearZip(Map<String, String> ficheros) async {
+  Future<File> makeZip(Map<String, String> ficheros) async {
     var encoder = ZipFileEncoder();
     Directory tempDir = await getTemporaryDirectory();
     String tempPath = tempDir.path;
@@ -29,7 +29,7 @@ class Picker {
     return File(tempPath + '/miZip.zip');
   }
 
-  Future<String> _enviar(File archivo, String url) async {
+  Future<String> upload(File archivo, String url) async {
     var stream = new http.ByteStream(DelegatingStream.typed(archivo.openRead()));
     var length = await archivo.length();
     var uri = Uri.parse(url + basename(archivo.path));
@@ -46,16 +46,16 @@ class Picker {
   }
 
   Future<File> multipleFiles() async {
-    Map<String, String> files = await _elegirVariosFicheros();
-    File zip = await _crearZip(files);
+    Map<String, String> files = await pickMultipleFiles();
+    File zip = await makeZip(files);
     return zip;
   }
 
   Future<String> getUrl(areMultipleFiles) async {
-    Map<bool, Function> options = {true: multipleFiles, false: _elegir};
+    Map<bool, Function> options = {true: multipleFiles, false: pick};
 
     File file = await options[areMultipleFiles]();
 
-    return _enviar(file, "https://transfer.sh/");
+    return upload(file, "https://transfer.sh/");
   }
 }
