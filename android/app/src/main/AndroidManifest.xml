@@ -12,7 +12,7 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="transfer"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/paper_plane">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
